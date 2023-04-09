@@ -1,0 +1,78 @@
+version: "3"
+services:
+  api:
+    build: .
+    ports:
+      - 80
+    volumes:
+      - ./:/usr/src/app
+    environment:
+      - DATABASE_HOSTNAME=fastapinaveen.me
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+    
+    depends_on:
+      - postgres
+    labels: 
+     - "traefik.enable=true"
+     - "traefik.http.routers.fastapi.rule=Host(`fastapinaveen.me`)"
+     - "traefik.http.routers.fastapi.tls=true"
+     - "traefik.http.routers.fastapi.tls.certresolver=letsencrypt"
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USERNAME}
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-db-new:/var/lib/postgresql/data
+  
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - 80
+    depends_on:
+      - postgres
+    labels:
+     - "traefik.enable=true"
+     - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.fastapinaveen.me`)"
+     - "traefik.http.routers.pgadmin.tls=true"
+     - "traefik.http.routers.pgadmin.tls.certresolver=letsencrypt"
+     - "traefik.http.routers.pgadmin.middlewares=pgauth"
+     - "traefik.http.middlewares.pgauth.basicauth.users=testuser:$$apr1$$jIKW.bdS$$eKXe4Lxjgy/rH65wP1iQe1"
+
+  traefik: 
+    build:
+      context: .
+      dockerfile: Dockerfile.traefik
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik-public-certificates:/certificates"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.fastapinaveen.me`)"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=testuser:$$apr1$$jIKW.bdS$$eKXe4Lxjgy/rH65wP1iQe1"
+
+volumes:
+  postgres-db-new:
+  traefik-public-certificates:
