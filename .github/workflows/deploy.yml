@@ -10,20 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-    - name: Deploy Docker Container on EC2 Instance
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd ~
-          docker-compose down
-          rm -rf fastapi-complete
-          docker rmi -f $(docker images -aq)
-          git clone https://github.com/armangral/fastapi-complete.git
-          cd fastapi-complete
-          docker-compose up -d
+      - name: Deploy Docker Container on EC2 Instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~
+            docker-compose down
+            rm -rf fastapi-complete
+            docker rmi -f $(docker images -aq)
+            git clone https://github.com/dycw/fastapi-complete.git
+            cd fastapi-complete
+            docker-compose up -d

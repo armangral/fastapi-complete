@@ -10,7 +10,7 @@ services:
     volumes:
       - ./:/usr/src/app
     environment:
-      - DATABASE_HOSTNAME=23.23.23.183
+      - DATABASE_HOSTNAME=192.168.1.19
       - DATABASE_PORT=${DATABASE_PORT}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_NAME=${DATABASE_NAME}
